@@ -3,6 +3,8 @@
 class Player
   attr_reader :bank, :cards, :name
 
+  ACE_CARD_CHAR = 'A'
+
   def initialize(name, bank)
     @name = name
     @bank = bank
@@ -15,5 +17,43 @@ class Player
 
   def add_money(value)
     bank.add(value)
+  end
+
+  def take_card(card)
+    cards << card
+  end
+
+  def show_cards
+    raise NotImplementedError, 'Should realize in subclass'
+  end
+
+  def cards_border
+    header = "===== #{name} cards ====="
+    puts header
+    puts ''
+    yield if block_given?
+    puts ''
+    puts '=' * header.length
+  end
+
+  def calculate_values
+    if cards.size == 3 && ace?
+      values = []
+      %i[min max].each do |m|
+        val = sum_values(m)
+        values << val if val <= 21
+      end
+      values.max
+    else
+      sum_values
+    end
+  end
+
+  def sum_values(method = :max)
+    cards.map(&:value).sum(&method)
+  end
+
+  def ace?
+    cards.map(&:char).include?(ACE_CARD_CHAR)
   end
 end
