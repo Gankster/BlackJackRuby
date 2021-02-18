@@ -4,6 +4,7 @@ class Player
   attr_reader :bank, :cards, :name
 
   ACE_CARD_CHAR = 'A'
+  WINNING_VALUE = 21
 
   def initialize(name, bank)
     @name = name
@@ -36,6 +37,10 @@ class Player
     puts '=' * header.length
   end
 
+  def open_cards
+    cards_border { puts "#{cards.map(&:name).join(' ')} | #{calculate_values}" }
+  end
+
   def calculate_values
     if cards.size == 3 && ace?
       values = []
@@ -55,5 +60,21 @@ class Player
 
   def ace?
     cards.map(&:char).include?(ACE_CARD_CHAR)
+  end
+
+  def can_take_card?
+    cards.size < 3
+  end
+
+  def valid_result?
+    compare_winning_score_with(calculate_values) <= 0
+  end
+
+  def compare_winning_value_with(player_value)
+    player_value <=> WINNING_VALUE
+  end
+
+  def <=>(other)
+    self <=> other
   end
 end

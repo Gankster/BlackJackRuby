@@ -15,4 +15,22 @@ module Interface
     )
     gets.chomp.to_i
   end
+
+  def show_winner(player)
+    puts ''
+    puts '********** Result **********'
+    puts "Winner: #{player.name}"
+    puts '****************************'
+    puts ''
+  end
+
+  def play_new_game
+    puts %(
+      Want to start a new game?
+        1. Yes
+        2. No
+        3. Continue
+    )
+    gets.chomp.to_i
+  end
 end
