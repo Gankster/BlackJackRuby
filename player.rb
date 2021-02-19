@@ -67,7 +67,7 @@ class Player
   end
 
   def valid_result?
-    compare_winning_score_with(calculate_values) <= 0
+    compare_winning_value_with(calculate_values) <= 0
   end
 
   def compare_winning_value_with(player_value)
@@ -75,6 +75,10 @@ class Player
   end
 
   def <=>(other)
-    self <=> other
+    calculate_values <=> other.calculate_values
+  end
+
+  def update_cards
+    @cards = []
   end
 end

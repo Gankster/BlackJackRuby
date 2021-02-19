@@ -24,10 +24,10 @@ class Deck
     'A' => [1, 11]
   }.freeze
 
-  attr_reader :deck
+  attr_reader :cards
 
   def initialize
-    @deck = create_cards
+    @cards = create_cards
   end
 
   private

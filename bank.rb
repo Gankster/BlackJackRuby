@@ -5,18 +5,18 @@ class Bank
 
   attr_reader :amount
 
-  def initialize(amount)
-    @amount = amount || 100
+  def initialize(amount = 100)
+    @amount = amount
   end
 
   def add(value)
-    self.amount += value
+    self.amount += value.to_i
   end
 
   def take(value)
     raise LimitExceeded, "You don't have enough money" if value > amount
 
-    self.amount -= value
+    self.amount -= value.to_i
   end
 
   private

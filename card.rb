@@ -7,6 +7,6 @@ class Card
     @char = char
     @value = value
     @suit = suit
-    @name = "#{value}#{suit}"
+    @name = "#{char}#{suit}"
   end
 end

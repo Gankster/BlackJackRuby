@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'interface'
+
 class Game
   include Interface
 
@@ -7,22 +9,31 @@ class Game
 
   class WrongOption < StandardError; end
 
+  attr_reader :players
+
+  def initialize
+    @winner = nil
+    @players = []
+  end
+
   def run
     create_user(name)
     create_diller
-    init_deck
-    give_two_cards
-    show_cards
-    init_game_bank
-    make_bets
+    start_game
   end
 
   private
 
   attr_reader :user, :diller, :deck, :bank
+  attr_accessor :winner
 
-  def players
-    @players ||= []
+  def start_game
+    init_deck
+    give_two_cards
+    show_cards
+    init_game_bank
+    make_bets
+    make_user_choose
   end
 
   def name
@@ -48,7 +59,7 @@ class Game
   end
 
   def give_card(player)
-    unless user.can_take_card?
+    unless player.can_take_card?
       puts 'You cannot take one more card'
       return
     end
@@ -61,7 +72,7 @@ class Game
   end
 
   def random_card
-    deck.delete(deck.sample)
+    deck.cards.delete(deck.cards.sample)
   end
 
   def show_cards
@@ -83,19 +94,17 @@ class Game
   end
 
   def make_user_choose
-    option = ask_to_make_choice
-    case option
+    finish_game if enough_cards?
+    case ask_to_make_choice
     when 1 # Skip
       puts 'Your turn is skipped'
       make_deller_choose
     when 2 # Take a card
       give_card(user)
-      user.show_cards
+      show_cards
       make_deller_choose
     when 3 # Open cards
-      open_cards
-      show_results
-      start_new_game
+      finish_game
     else
       raise WrongOption
     end
@@ -104,12 +113,20 @@ class Game
     retry
   end
 
+  def finish_game
+    open_cards
+    show_results
+    start_new_game
+  end
+
   def open_cards
     players.each(&:open_cards)
   end
 
   def show_results
-    show_winner(find_winner)
+    self.winner = find_winner
+    show_winner(winner)
+    distribute_win
   end
 
   def find_winner
@@ -125,8 +142,7 @@ class Game
   def start_new_game
     case play_new_game
     when 1 # Yes
-      puts 'New game started'
-      run
+      continue_game
     when 2 # No
       exit
     else
@@ -137,7 +153,36 @@ class Game
     retry
   end
 
+  def continue_game
+    self.winner = nil
+    players.each(&:update_cards)
+    puts 'New game started'
+    start_game
+  end
+
+  def distribute_win
+    if winner.nil?
+      amount = bank.amount / 2
+      players.each do |p|
+        p.add_money(amount)
+      end
+    else
+      winner.add_money(bank.amount)
+    end
+  end
+
   def make_deller_choose
-    
+    finish_game if enough_cards?
+    if diller.enough_value?
+      puts "Diller's turn is skipped"
+    else
+      give_card(diller)
+      show_cards
+    end
+    make_user_choose
+  end
+
+  def enough_cards?
+    players.map { |p| p.cards.size }.all?(3)
   end
 end
