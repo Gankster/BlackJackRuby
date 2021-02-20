@@ -32,4 +32,37 @@ module Interface
     )
     gets.chomp.to_i
   end
+
+  def enough_cards_msg
+    show_msg('You cannot take one more card')
+  end
+
+  def wrong_option_msg
+    show_msg('You have chosen the wrong option. Choose the right option from the list')
+  end
+
+  def new_game_msg
+    show_msg('New game started')
+  end
+
+  def skip_msg(player)
+    show_msg("#{player.name} skip his turn")
+  end
+
+  def money_limit(player)
+    show_msg("#{player.name} don't have money")
+  end
+
+  def cards_border
+    puts ''
+    puts "===== #{name} cards ====="
+    puts ''
+    yield if block_given?
+    puts ''
+  end
+
+  def show_msg(msg)
+    puts ''
+    puts msg.to_s
+  end
 end

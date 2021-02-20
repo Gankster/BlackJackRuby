@@ -18,21 +18,21 @@ class Game
 
   def run
     create_user(name)
-    create_diller
+    create_dealer
     start_game
   end
 
   private
 
-  attr_reader :user, :diller, :deck, :bank
+  attr_reader :user, :dealer, :deck, :bank
   attr_accessor :winner
 
   def start_game
     init_deck
     give_two_cards
-    show_cards
     init_game_bank
     make_bets
+    show_cards
     make_user_choose
   end
 
@@ -46,10 +46,10 @@ class Game
     players << @user
   end
 
-  def create_diller
+  def create_dealer
     bank = Bank.new
-    @diller = Diller.new(bank)
-    players << @diller
+    @dealer = Dealer.new(bank)
+    players << @dealer
   end
 
   def give_two_cards
@@ -59,10 +59,7 @@ class Game
   end
 
   def give_card(player)
-    unless player.can_take_card?
-      puts 'You cannot take one more card'
-      return
-    end
+    return enough_cards_msg unless player.can_take_card?
 
     player.take_card(random_card)
   end
@@ -76,10 +73,7 @@ class Game
   end
 
   def show_cards
-    players.each do |player|
-      puts ''
-      player.show_cards
-    end
+    players.each(&:show_cards)
   end
 
   def init_game_bank
@@ -88,8 +82,13 @@ class Game
 
   def make_bets
     players.each do |player|
-      player.place_bet(BET_VALUE)
-      bank.add(BET_VALUE)
+      begin
+        player.place_bet(BET_VALUE)
+        bank.add(BET_VALUE)
+      rescue Bank::LimitExceeded
+        money_limit(player)
+        start_new_game(continue: false)
+      end
     end
   end
 
@@ -97,7 +96,7 @@ class Game
     finish_game if enough_cards?
     case ask_to_make_choice
     when 1 # Skip
-      puts 'Your turn is skipped'
+      skip_msg(user)
       make_deller_choose
     when 2 # Take a card
       give_card(user)
@@ -109,7 +108,7 @@ class Game
       raise WrongOption
     end
   rescue WrongOption
-    puts 'You have chosen the wrong option. Choose the right option from the list'
+    wrong_option_msg
     retry
   end
 
@@ -130,34 +129,40 @@ class Game
   end
 
   def find_winner
-    return diller unless user.valid_result?
-    return user unless diller.valid_result?
+    return dealer unless user.valid_result?
+    return user unless dealer.valid_result?
 
-    res = user <=> diller
+    res = user <=> dealer
 
     return user if res.positive?
-    return diller if res.negative?
+    return dealer if res.negative?
   end
 
-  def start_new_game
+  def start_new_game(continue: true)
     case play_new_game
     when 1 # Yes
-      continue_game
+      new_game(continue)
     when 2 # No
       exit
     else
       raise WrongOption
     end
   rescue WrongOption
-    puts 'You have chosen the wrong option. Choose the right option from the list'
+    wrong_option_msg
     retry
   end
 
-  def continue_game
+  def new_game(continue)
     self.winner = nil
-    players.each(&:update_cards)
-    puts 'New game started'
-    start_game
+    new_game_msg
+
+    if continue
+      players.each(&:update_cards)
+      start_game
+    else
+      @players = []
+      run
+    end
   end
 
   def distribute_win
@@ -173,10 +178,10 @@ class Game
 
   def make_deller_choose
     finish_game if enough_cards?
-    if diller.enough_value?
-      puts "Diller's turn is skipped"
+    if dealer.enough_value?
+      skip_msg(dealer)
     else
-      give_card(diller)
+      give_card(dealer)
       show_cards
     end
     make_user_choose

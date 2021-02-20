@@ -2,14 +2,14 @@
 
 require 'securerandom'
 
-class Diller < Player
+class Dealer < Player
   def initialize(bank)
-    name = "Diller_#{SecureRandom.hex(5)}"
+    name = "Dealer_#{SecureRandom.hex(5)}"
     super(name, bank)
   end
 
   def show_cards
-    cards_border { puts Array.new(cards.size, '*').join(' ') }
+    cards_border { puts Array.new(cards.size, '*').join(' ') << " | Money: #{bank.amount}" }
   end
 
   def enough_value?

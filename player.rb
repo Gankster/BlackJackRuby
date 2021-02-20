@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
+require_relative 'interface'
+
 class Player
+  include Interface
+
   attr_reader :bank, :cards, :name
 
   ACE_CARD_CHAR = 'A'
@@ -28,17 +32,8 @@ class Player
     raise NotImplementedError, 'Should realize in subclass'
   end
 
-  def cards_border
-    header = "===== #{name} cards ====="
-    puts header
-    puts ''
-    yield if block_given?
-    puts ''
-    puts '=' * header.length
-  end
-
   def open_cards
-    cards_border { puts "#{cards.map(&:name).join(' ')} | #{calculate_values}" }
+    cards_border { puts "#{cards.map(&:name).join(' ')} | #{calculate_values} | Money: #{bank.amount}" }
   end
 
   def calculate_values

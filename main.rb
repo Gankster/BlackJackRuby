@@ -6,7 +6,7 @@ require_relative 'deck'
 require_relative 'card'
 require_relative 'player'
 require_relative 'user'
-require_relative 'diller'
+require_relative 'dealer'
 
 game = Game.new
 game.run
